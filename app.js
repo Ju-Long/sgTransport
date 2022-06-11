@@ -113,14 +113,12 @@ fastify.get('/view/bus_stops', async (request, reply) => {
 })
 
 const start = async () => {
-    try {
-        await fastify.listen({
-            port: 3002
-        })
-    } catch (err) {
-        fastify.log.error(err)
-        process.exit(1)
-    }
+    await fastify.listen(3002, '0.0.0.0')
+    .then((address) => console.log(`server is listening on ${address}`))
+    .catch(err => {
+        console.log('error starting server: ', err);
+        process.exit(1);
+    });
 }
 start()
 
