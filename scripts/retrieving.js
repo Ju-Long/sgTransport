@@ -1,4 +1,5 @@
 const { createClient } = require('redis');
+const { cache } = require('./caching');
 
 const retrieveBusStops = async () => {
     const client = createClient();
@@ -6,6 +7,11 @@ const retrieveBusStops = async () => {
 
     await client.connect();
     let bus_stop_code_keys = await client.keys('BusStopCode:*')
+    if (bus_stop_code_keys.length === 0) {
+        await cache;
+        return await retrieveBusStops()
+    }
+
     let bus_stops = [];
 
     for (let i in bus_stop_code_keys) {

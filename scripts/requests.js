@@ -1,6 +1,10 @@
 require('dotenv').config();
 const got = require('got')
 
+const getBusArrival = (BusStopCode, ServiceNo) => {
+
+}
+
 const getBusRoutes = async () => {
     const values = []
     let skip = 0;

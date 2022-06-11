@@ -2,8 +2,13 @@
 const { getBusRoutes, getBuses, getBusStops } = require('./scripts/requests');
 const { cache } = require('./scripts/caching');
 const { retrieveBusStops } = require('./scripts/retrieving');
+const { sendErrorReport } = require('./scripts/error');
 const fastify = require('fastify')({
     logger: true
+})
+
+fastify.get('/cache', async (request, reply) => {
+    return await cache
 })
 
 fastify.get('/', async (request, reply) => {
@@ -85,7 +90,25 @@ fastify.get('/view/buses', async (request, reply) => {
 })
 
 fastify.get('/view/bus_stops', async (request, reply) => {
+    const buses = await getBuses
     const bus_stops = await getBusStops
+    const bus_routes = await getBusRoutes
+
+    for (let i in bus_routes) {
+        let bus_route = bus_routes[i];
+        let index = bus_stops.findIndex((bus_stop) => {return bus_stop.BusStopCode === bus_route.BusStopCode})
+        if (index < 0) { continue; }
+        
+        let bus_index = buses.findIndex((bus) => {return (bus.ServiceNo === bus_route.ServiceNo && bus.Direction === bus_route.Direction)})
+
+        if (bus_stops[index].Buses == undefined || 
+            bus_stops[index].Buses == null) {
+                bus_stops[index].Buses = [buses[bus_index]]
+        } else {
+            bus_stops[index].Buses.push(buses[bus_index])
+        }
+    }
+
     return bus_stops
 })
 
@@ -107,4 +130,5 @@ const cron = require('node-cron')
 // fetch Everyday
 cron.schedule('0 0 * * *', async () => {
     await cache
+    await sendErrorReport
 })

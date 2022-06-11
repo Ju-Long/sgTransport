@@ -1,9 +1,13 @@
 {
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "dotenv": "^16.0.1",
     "fastify": "^4.0.1",
+    "fs": "^0.0.1-security",
     "got": "11.8.3",
+    "moment": "^2.29.3",
     "node-cron": "^3.0.1",
+    "path": "^0.12.7",
     "redis": "^4.1.0",
     "uuid": "^8.3.2"
   },
