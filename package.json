@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "fastify": "^4.0.1",
+    "node-cron": "^3.0.1",
+    "redis": "^4.1.0"
+  },
+  "name": "sgbus",
+  "version": "1.0.0",
+  "description": "SG bus timing API",
+  "main": "app.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ju-Long/sgBus.git"
+  },
+  "keywords": [
+    "sg",
+    "bus"
+  ],
+  "author": "BaBaSaMa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ju-Long/sgBus/issues"
+  },
+  "homepage": "https://github.com/Ju-Long/sgBus#readme"
+}

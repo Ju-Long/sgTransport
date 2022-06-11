@@ -1,0 +1,3 @@
+[submodule "sgBus-Apple"]
+	path = sgBus-Apple
+	url = https://github.com/BaBaSaMa-Hosting/sgBus-Apple.git
