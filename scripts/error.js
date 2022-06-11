@@ -62,7 +62,7 @@ const sendErrorReport = async () => {
             email: process.env.SENDER_EMAIL
         },
         subject: 'Error Reporting',
-        text: errors
+        text: `${errors}`
     }
     
     sendgrid.send(msg)
