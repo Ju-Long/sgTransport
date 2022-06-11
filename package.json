@@ -1,17 +1,20 @@
 {
   "dependencies": {
+    "dotenv": "^16.0.1",
     "fastify": "^4.0.1",
+    "got": "11.8.3",
     "node-cron": "^3.0.1",
-    "redis": "^4.1.0"
+    "redis": "^4.1.0",
+    "uuid": "^8.3.2"
   },
   "name": "sgbus",
   "version": "1.0.0",
   "description": "SG bus timing API",
   "main": "app.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ju-Long/sgBus.git"
