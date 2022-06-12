@@ -1,7 +1,7 @@
 // MARK: API ROUTES
 const { getBusStopArrival, getBusArrival, getBusRoutes, getBuses, getBusStops } = require('./scripts/requests');
-const { cache } = require('./scripts/caching');
-const { retrieveBusStops } = require('./scripts/retrieving');
+const { cache, storingBusStopTiming, storingBusTiming } = require('./scripts/caching');
+const { retrieveBusStops, retrieveBuses, retrieveBus, retrieveBusStopTiming, retrieveBusTiming } = require('./scripts/retrieving');
 const { sendErrorReport } = require('./scripts/error');
 const fastify = require('fastify')({
     logger: true
@@ -16,24 +16,65 @@ fastify.get('/', async (request, reply) => {
 })
 
 // MARK: GET BUS TIMING AT ALL BUS STOP
-fastify.get('/timing/:ServiceNo', async (request, reply) => {
+fastify.get('/timing/Bus/:ServiceNo', async (request, reply) => {
     const ServiceNo = request.params.ServiceNo
     if (!ServiceNo) {
         return {response: 'error', error: 'invalid Service No input', parameters: {ServiceNo: ServiceNo}}
     }
 
-    
+    let bus_timing = await retrieveBusTiming(ServiceNo);
+    if (bus_timing) {
+        return bus_timing
+    }
+
+    let bus = await retrieveBus(ServiceNo);
+    if (bus === []) {
+        await cache()
+        bus = await retrieveBus(ServiceNo);
+    }
+
+    if (!bus) {
+        return {response: 'error', error: 'No Bus Found'}
+    }
+
+    const timings = []
+    for (let i in bus.Route) {
+        let route = bus.Route[i];
+
+        let time = await getBusArrival(route.BusStopCode, ServiceNo);
+        time.BusStopCode = route.BusStopCode
+        timings.push(time);
+    }
+
+    let bus_with_timing = {
+        ServiceNo: ServiceNo,
+        timings: timings
+    }
+
+    await storingBusTiming(bus_with_timing)
+    return timings
 })
 
 // MARK: GET BUS STOP BUS TIMING TIMING
-fastify.get('/timing/:BusStopCode', async (request, reply) => {
+fastify.get('/timing/BusStop/:BusStopCode', async (request, reply) => {
     const BusStopCode = request.params.BusStopCode
     if (!BusStopCode) {
         return {response: 'error', error: 'invalid Bus Stop Code input', parameters: {BusStopCode: BusStopCode}}
     }
 
+    let bus_stop_timing = await retrieveBusTiming(BusStopCode);
+    if (bus_stop_timing) {
+        return bus_stop_timing
+    }
+
     let timings = await getBusStopArrival(BusStopCode);
-    return timings;
+    let bus_stop = {
+        BusStopCode: BusStopCode,
+        timings: timings
+    }
+
+    await storingBusStopTiming(bus_stop)
+    return bus_stop;
 })
 
 // MARK: GET NEAREST BUS STOPS

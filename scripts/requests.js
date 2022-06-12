@@ -1,5 +1,5 @@
 require('dotenv').config();
-const got = require('got')
+const got = require('got');
 
 const getBusStopArrival = async (BusStopCode) => {
     let data = await got.get(`http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=${BusStopCode}`, {

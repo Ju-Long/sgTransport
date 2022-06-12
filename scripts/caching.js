@@ -1,5 +1,32 @@
 const { createClient } = require('redis');
+const moment = require('moment')
 const { getBusRoutes, getBuses, getBusStops } = require('./requests');
+
+const storingBusTiming = async(bus) => {
+    const client = createClient();
+    client.on('error', (err) => console.error('Redis Client Error', err));
+
+    await client.connect()
+    await client.hSet(`BusTiming:${bus.ServiceNo}`, 'last_called', JSON.stringify(moment().format()))
+    for (let i in Object.keys(bus)) {
+        let key = Object.keys(bus)[i];
+        await client.hSet(`BusTiming:${bus.ServiceNo}`, key, JSON.stringify(bus[key]))
+    }
+    await client.quit()
+}
+
+const storingBusStopTiming = async(bus_stop) => {
+    const client = createClient();
+    client.on('error', (err) => console.error('Redis Client Error', err));
+
+    await client.connect()
+    await client.hSet(`BusStopTiming:${bus_stop.BusStopCode}`, 'last_called', JSON.stringify(moment().format()))
+    for (let i in Object.keys(bus_stop)) {
+        let key = Object.keys(bus_stop)[i];
+        await client.hSet(`BusStopTiming:${bus_stop.BusStopCode}`, key, JSON.stringify(bus_stop[key]))
+    }
+    await client.quit()
+}
 
 const storingBuses = async () => {
     const client = createClient();
@@ -87,6 +114,8 @@ const cache = async () => {
 
 module.exports = {
     cache,
-    storingBusStops,
     storingBuses,
+    storingBusStops,
+    storingBusTiming,
+    storingBusStopTiming,
 }
