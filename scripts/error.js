@@ -1,6 +1,5 @@
 require('dotenv').config();
 const fs = require('fs')
-const path = require('path')
 const moment = require('moment')
 const sendgrid = require('@sendgrid/mail')
 sendgrid.setApiKey(process.env.SENDGRID_API)
@@ -65,15 +64,15 @@ const sendErrorReport = async () => {
         text: `${errors}`
     }
     
-    // sendgrid.send(msg)
-    //     .then((response) => {
-    //         console.log(response)
-    //     }).catch((error) => {
-    //         console.error(error)
-    //     })
+    sendgrid.send(msg)
+        .then((response) => {
+            console.log(response)
+        }).catch((error) => {
+            console.error(error)
+        })
 }
 
 module.exports = {
-    writeErrorReport: writeErrorReport(),
-    sendErrorReport: sendErrorReport()
+    writeErrorReport,
+    sendErrorReport
 }
