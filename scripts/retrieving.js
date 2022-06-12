@@ -9,6 +9,7 @@ const retrieveBusTiming = async (ServiceNo) => {
     await client.connect();
     let bus_timing_keys = await client.keys(`BusTiming:${ServiceNo}`)
     if (bus_timing_keys.length === 0) {
+        await client.quit()
         return null;
     }
 
@@ -22,6 +23,7 @@ const retrieveBusTiming = async (ServiceNo) => {
     if (time_diff > 1) {
         return null;
     }
+    await client.quit()
 
     return bus_timing;
 }
@@ -33,6 +35,7 @@ const retrieveBusStopTiming = async (BusStopCode) => {
     await client.connect();
     let bus_stop_timing_keys = await client.keys(`BusStopTiming:${BusStopCode}`)
     if (bus_stop_timing_keys.length === 0) {
+        await client.quit()
         return null;
     }
 
@@ -43,8 +46,10 @@ const retrieveBusStopTiming = async (BusStopCode) => {
     let last_called = moment(bus_stop_timing.last_called)
     let time_diff = moment().diff(last_called, 'minutes');
     if (time_diff > 1) {
+        await client.quit()
         return null;
     }
+    await client.quit()
 
     return bus_stop_timing;
 }
@@ -57,6 +62,7 @@ const retrieveBusStops = async () => {
     let bus_stop_code_keys = await client.keys('BusStopCode:*')
     if (bus_stop_code_keys.length === 0) {
         await cache();
+        await client.quit()
         return await retrieveBusStops()
     }
 
@@ -70,6 +76,7 @@ const retrieveBusStops = async () => {
         })
         bus_stops.push(bus_stop);
     }
+    await client.quit()
 
     return bus_stops
 }
@@ -82,6 +89,7 @@ const retrieveBuses = async () => {
     let bus_code_keys = await client.keys('Bus:*')
     if (bus_code_keys.length === 0) {
         await cache();
+        await client.quit()
         return await retrieveBuses()
     }
 
@@ -95,6 +103,7 @@ const retrieveBuses = async () => {
         })
         buses.push(bus);
     }
+    await client.quit()
 
     return buses
 }
@@ -106,6 +115,7 @@ const retrieveBus = async (ServiceNo) => {
     await client.connect();
     let bus_code_keys = await client.keys(`Bus:${ServiceNo}`)
     if (bus_code_keys.length === 0) {
+        await client.quit()
         return [];
     }
 
@@ -114,6 +124,7 @@ const retrieveBus = async (ServiceNo) => {
         bus[key] = JSON.parse(bus[key])
     })
 
+    await client.quit()
     return bus
 }
 
