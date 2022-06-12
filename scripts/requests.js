@@ -1,8 +1,28 @@
 require('dotenv').config();
 const got = require('got')
 
-const getBusArrival = (BusStopCode, ServiceNo) => {
+const getBusStopArrival = async (BusStopCode) => {
+    let data = await got.get(`http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=${BusStopCode}`, {
+        headers: {
+            AccountKey: process.env.DATAMALL_API_KEY
+        },
+        responseType: 'json',
+        timeout: 60000,
+    });
 
+    return data.body.Services
+}
+
+const getBusArrival = async (BusStopCode, ServiceNo) => {
+    let data = await got.get(`http://datamall2.mytransport.sg/ltaodataservice/BusArrivalv2?BusStopCode=${BusStopCode}&ServiceNo=${ServiceNo}`, {
+        headers: {
+            AccountKey: process.env.DATAMALL_API_KEY
+        },
+        responseType: 'json',
+        timeout: 60000,
+    });
+
+    return data.body.Services[0]
 }
 
 const getBusRoutes = async () => {
@@ -65,8 +85,10 @@ const getBusStops = async () => {
     return values
 }
 
-module.exports = {
-    getBusRoutes: getBusRoutes(),
-    getBuses: getBuses(),
-    getBusStops: getBusStops(),
+module.exports =  {
+    getBusStopArrival,
+    getBusArrival,
+    getBusRoutes,
+    getBuses,
+    getBusStops,
 }

@@ -5,8 +5,8 @@ const storingBuses = async () => {
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
 
-    const buses = await getBuses
-    const bus_routes = await getBusRoutes
+    const buses = await getBuses()
+    const bus_routes = await getBusRoutes()
     for (let i in bus_routes) {
         let bus_route = bus_routes[i];
         let index = buses.findIndex((bus) => {return (bus.ServiceNo === bus_route.ServiceNo && bus.Direction === bus_route.Direction)})
@@ -47,9 +47,9 @@ const storingBusStops = async () => {
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
 
-    const buses = await getBuses
-    const bus_stops = await getBusStops
-    const bus_routes = await getBusRoutes
+    const buses = await getBuses()
+    const bus_stops = await getBusStops()
+    const bus_routes = await getBusRoutes()
 
     for (let i in bus_routes) {
         let bus_route = bus_routes[i];
@@ -86,7 +86,7 @@ const cache = async () => {
 }
 
 module.exports = {
-    cache: cache(),
-    storingBusStops: storingBusStops(),
-    storingBuses: storingBuses()
+    cache,
+    storingBusStops,
+    storingBuses,
 }

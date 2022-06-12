@@ -65,12 +65,12 @@ const sendErrorReport = async () => {
         text: `${errors}`
     }
     
-    sendgrid.send(msg)
-        .then((response) => {
-            console.log(response)
-        }).catch((error) => {
-            console.error(error)
-        })
+    // sendgrid.send(msg)
+    //     .then((response) => {
+    //         console.log(response)
+    //     }).catch((error) => {
+    //         console.error(error)
+    //     })
 }
 
 module.exports = {

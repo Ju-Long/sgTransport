@@ -1,5 +1,5 @@
 // MARK: API ROUTES
-const { getBusRoutes, getBuses, getBusStops } = require('./scripts/requests');
+const { getBusStopArrival, getBusArrival, getBusRoutes, getBuses, getBusStops } = require('./scripts/requests');
 const { cache } = require('./scripts/caching');
 const { retrieveBusStops } = require('./scripts/retrieving');
 const { sendErrorReport } = require('./scripts/error');
@@ -8,11 +8,32 @@ const fastify = require('fastify')({
 })
 
 fastify.get('/cache', async (request, reply) => {
-    return await cache
+    return await cache()
 })
 
 fastify.get('/', async (request, reply) => {
     return
+})
+
+// MARK: GET BUS TIMING AT ALL BUS STOP
+fastify.get('/timing/:ServiceNo', async (request, reply) => {
+    const ServiceNo = request.params.ServiceNo
+    if (!ServiceNo) {
+        return {response: 'error', error: 'invalid Service No input', parameters: {ServiceNo: ServiceNo}}
+    }
+
+    
+})
+
+// MARK: GET BUS STOP BUS TIMING TIMING
+fastify.get('/timing/:BusStopCode', async (request, reply) => {
+    const BusStopCode = request.params.BusStopCode
+    if (!BusStopCode) {
+        return {response: 'error', error: 'invalid Bus Stop Code input', parameters: {BusStopCode: BusStopCode}}
+    }
+
+    let timings = await getBusStopArrival(BusStopCode);
+    return timings;
 })
 
 // MARK: GET NEAREST BUS STOPS
@@ -29,7 +50,7 @@ fastify.get('/nearest/:limit', async (request, reply) => {
     }
 
     const sorted_bus_stops = []
-    const bus_stops = await retrieveBusStops;
+    const bus_stops = await retrieveBusStops();
 
     for (let i in bus_stops) {
         let bus_stop = bus_stops[i];
@@ -60,8 +81,8 @@ fastify.get('/nearest/:limit', async (request, reply) => {
 
 // MARK: VIEW DATA RETURN
 fastify.get('/view/buses', async (request, reply) => {
-    const buses = await getBuses
-    const bus_routes = await getBusRoutes
+    const buses = await getBuses()
+    const bus_routes = await getBusRoutes()
     for (let i in bus_routes) {
         let bus_route = bus_routes[i];
         let index = buses.findIndex((bus) => {return (bus.ServiceNo === bus_route.ServiceNo && bus.Direction === bus_route.Direction)})
@@ -90,9 +111,9 @@ fastify.get('/view/buses', async (request, reply) => {
 })
 
 fastify.get('/view/bus_stops', async (request, reply) => {
-    const buses = await getBuses
-    const bus_stops = await getBusStops
-    const bus_routes = await getBusRoutes
+    const buses = await getBuses()
+    const bus_stops = await getBusStops()
+    const bus_routes = await getBusRoutes()
 
     for (let i in bus_routes) {
         let bus_route = bus_routes[i];
@@ -127,6 +148,6 @@ const cron = require('node-cron')
 
 // fetch Everyday
 cron.schedule('0 0 * * *', async () => {
-    await cache
-    await sendErrorReport
+    await cache()
+    await sendErrorReport()
 })
