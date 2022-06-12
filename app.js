@@ -62,7 +62,7 @@ fastify.get('/timing/BusStop/:BusStopCode', async (request, reply) => {
         return {response: 'error', error: 'invalid Bus Stop Code input', parameters: {BusStopCode: BusStopCode}}
     }
 
-    let bus_stop_timing = await retrieveBusTiming(BusStopCode);
+    let bus_stop_timing = await retrieveBusStopTiming(BusStopCode);
     if (bus_stop_timing) {
         return bus_stop_timing
     }
@@ -75,6 +75,28 @@ fastify.get('/timing/BusStop/:BusStopCode', async (request, reply) => {
 
     await storingBusStopTiming(bus_stop)
     return bus_stop;
+})
+
+// MARK: SEARCH FOR BUS
+fastify.get('/search/Bus/:ServiceNo', async (request, reply) => {
+    const ServiceNo = request.params.ServiceNo
+    if (!ServiceNo) {
+        return {response: 'error', error: 'invalid Service No input', parameters: {ServiceNo: ServiceNo}}
+    }
+
+    let buses = await retrieveBuses();
+    return buses.filter((bus) => { return bus.ServiceNo.includes(ServiceNo) });
+})
+
+// MARK: SEARCH FOR BUS STOP
+fastify.get('/search/BusStop/:BusStopCode', async (request, reply) => {
+    const BusStopCode = request.params.BusStopCode
+    if (!BusStopCode) {
+        return {response: 'error', error: 'invalid Bus Stop Code input', parameters: {BusStopCode: BusStopCode}}
+    }
+
+    let bus_stops = await retrieveBusStops();
+    return bus_stops.filter((bus_stop) => { return bus_stop.BusStopCode.includes(BusStopCode) });
 })
 
 // MARK: GET NEAREST BUS STOPS
