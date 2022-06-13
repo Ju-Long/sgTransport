@@ -1,5 +1,6 @@
 const { createClient } = require('redis');
-const moment = require('moment')
+const moment = require('moment');
+const fs = require('fs');
 const { getBusRoutes, getBuses, getBusStops } = require('./requests');
 
 const storingBusTiming = async(bus) => {
@@ -68,6 +69,11 @@ const storingBuses = async () => {
         }
     }
     await client.quit();
+
+    if (!fs.existsSync('./dist/')) {
+        fs.mkdirSync('./dist/');
+    }
+    fs.writeFileSync('./dist/Buses.json', JSON.stringify(buses))
 }
 
 const storingBusStops = async () => {
@@ -103,6 +109,11 @@ const storingBusStops = async () => {
         }
     }
     await client.quit();
+
+    if (!fs.existsSync('./dist/')) {
+        fs.mkdirSync('./dist/');
+    }
+    fs.writeFileSync('./dist/BusStops.json', JSON.stringify(bus_stops))
 }
 
 const cache = async () => {

@@ -1,6 +1,7 @@
 const { createClient } = require('redis');
 const moment = require('moment');
 const { cache } = require('./caching');
+const fs = require('fs');
 
 const retrieveBusTiming = async (ServiceNo) => {
     const client = createClient();
@@ -55,6 +56,10 @@ const retrieveBusStopTiming = async (BusStopCode) => {
 }
 
 const retrieveBusStops = async () => {
+    if (fs.existsSync('../dist/BusStops.json')) {
+        return JSON.parse(fs.readFileSync('../dist/BusStops.json'))
+    }
+
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
 
@@ -82,6 +87,10 @@ const retrieveBusStops = async () => {
 }
 
 const retrieveBuses = async () => {
+    if (fs.existsSync('../dist/Buses.json')) {
+        return JSON.parse(fs.readFileSync('../dist/Buses.json'))
+    }
+
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
 

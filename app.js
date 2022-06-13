@@ -112,7 +112,7 @@ fastify.get('/nearest/:limit', async (request, reply) => {
         return {response: 'error', error: 'invalid limit input', parameters: {limit: limit}}
     }
 
-    const sorted_bus_stops = []
+    const sort_bus_stops = []
     const bus_stops = await retrieveBusStops();
 
     for (let i in bus_stops) {
@@ -129,11 +129,51 @@ fastify.get('/nearest/:limit', async (request, reply) => {
         dist = dist * 1.609344 
 
         bus_stop.distance = dist
-        sorted_bus_stops.push(bus_stop)
+        sort_bus_stops.push(bus_stop)
     }
-    sorted_bus_stops.sort(function (a, b) {
-        return a.distance - b.distance
-    })
+    
+    // quick sort algo
+    function swap(items, leftIndex, rightIndex){
+        var temp = items[leftIndex];
+        items[leftIndex] = items[rightIndex];
+        items[rightIndex] = temp;
+    }
+
+    function partition(items, left, right) {
+        let pivot   = items[Math.floor((right + left) / 2)] //middle element
+        let i       = left //left pointer
+        let j       = right; //right pointer
+        while (i <= j) {
+            while (items[i].distance < pivot.distance) {
+                i++;
+            }
+            while (items[j].distance > pivot.distance) {
+                j--;
+            }
+            if (i <= j) {
+                swap(items, i, j); //sawpping two elements
+                i++;
+                j--;
+            }
+        }
+        return i;
+    }
+    
+    function quickSort(items, left, right) {
+        var index;
+        if (items.length > 1) {
+            index = partition(items, left, right);
+            if (left < index - 1) {
+                quickSort(items, left, index - 1);
+            }
+            if (index < right) {
+                quickSort(items, index, right);
+            }
+        }
+        return items;
+    }
+
+    const sorted_bus_stops = quickSort(sort_bus_stops, 0, sort_bus_stops.length - 1)
 
     if (limit < 1) {
         return sorted_bus_stops
