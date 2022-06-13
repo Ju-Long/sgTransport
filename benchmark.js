@@ -1,6 +1,7 @@
 const { retrieveBusStops, retrieveBuses, retrieveBus, retrieveBusStopTiming, retrieveBusTiming } = require('./scripts/retrieving');
 
-const TestingNearestLocationExecutionSpeed = async () => {
+console.time("TestingNearestLocationExecutionSpeed")
+new Promise(async (resolve, reject) => {
     console.log("Testing Nearest Location Execution Speed")
     const lat = 1
     const long = 103
@@ -27,8 +28,6 @@ const TestingNearestLocationExecutionSpeed = async () => {
         return a.distance - b.distance
     })
     console.log("Finish Testing Nearest Location Execution Speed")
-}
-
-console.time("TestingNearestLocationExecutionSpeed")
-TestingNearestLocationExecutionSpeed()
+    resolve();  
+})
 console.timeEnd("TestingNearestLocationExecutionSpeed")
