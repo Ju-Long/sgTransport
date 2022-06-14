@@ -101,16 +101,19 @@ fastify.get('/search/BusStop/:BusStopCode', async (request, reply) => {
 
 // MARK: GET NEAREST BUS STOPS
 fastify.get('/nearest/:limit', async (request, reply) => {
-    const lat = request.query.lat
-    const long = request.query.long
+    var lat = request.query.lat
+    var long = request.query.long
     const limit = request.params.limit
-    if (!lat || !long) {
+    if (isNaN(lat) || isNaN(long)) {
         return {response: 'error', error: 'invalid coordinates input', parameters: {lat: lat, long: long}}
     }
 
     if (isNaN(limit)) {
         return {response: 'error', error: 'invalid limit input', parameters: {limit: limit}}
     }
+
+    lat = Math.floor(Number(lat) * 10000) / 10000
+    long = Math.floor(Number(long) * 10000) / 10000
 
     let nearest_bus_stops = await retrieveNearestLocation(lat, long);
     if (nearest_bus_stops) {
