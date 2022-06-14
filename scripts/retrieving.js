@@ -3,6 +3,30 @@ const moment = require('moment');
 const { cache } = require('./caching');
 const fs = require('fs');
 
+const retrieveNearestLocation = async (lat, long) => {
+    const client = createClient();
+    client.on('error', (err) => console.error('Redis Client Error', err));
+    client.connect()
+    let nearest_keys = await client.keys(`Lat:${lat},Long:${long}`);
+    if (nearest_keys.length === 0) {
+        await client.quit()
+        return null;
+    }   
+
+    let nearest = await client.hGetAll(`Lat:${lat},Long:${long}`);
+    Object.keys(nearest).forEach(key => {
+        nearest[key] = JSON.parse(nearest[key])
+    })
+    let last_called = moment(nearest.last_called);
+    let time_diff = moment().diff(last_called, 'days');
+    await client.quit();
+
+    if (time_diff > 1) {
+        return null;
+    }
+    return nearest.data;
+}
+
 const retrieveBusTiming = async (ServiceNo) => {
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
@@ -16,15 +40,14 @@ const retrieveBusTiming = async (ServiceNo) => {
 
     let bus_timing = await client.hGetAll(`BusTiming:${ServiceNo}`)
     Object.keys(bus_timing).forEach(key => {
-        console.log(bus_timing[key])
         bus_timing[key] = JSON.parse(bus_timing[key])
     })
     let last_called = moment(bus_timing.last_called)
-    let time_diff = moment().diff(last_called, 'minutes');
+    let time_diff = moment().diff(last_called, 'minutes'); 
+    await client.quit()
     if (time_diff > 1) {
         return null;
     }
-    await client.quit()
 
     return bus_timing;
 }
@@ -45,7 +68,7 @@ const retrieveBusStopTiming = async (BusStopCode) => {
         bus_stop_timing[key] = JSON.parse(bus_stop_timing[key])
     })
     let last_called = moment(bus_stop_timing.last_called)
-    let time_diff = moment().diff(last_called, 'minutes');
+    let time_diff = moment().diff(last_called, 'minutes'); 
     if (time_diff > 1) {
         await client.quit()
         return null;
@@ -62,8 +85,8 @@ const retrieveBusStops = async () => {
 
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
-
     await client.connect();
+
     let bus_stop_code_keys = await client.keys('BusStopCode:*')
     if (bus_stop_code_keys.length === 0) {
         await cache();
@@ -137,10 +160,32 @@ const retrieveBus = async (ServiceNo) => {
     return bus
 }
 
+const retrieveBusStop = async (BusStopCode) => {
+    const client = createClient();
+    client.on('error', (err) => console.error('Redis Client Error', err));
+
+    await client.connect();
+    let bus_stop_code_keys = await client.keys(`BusStopCode:${BusStopCode}`)
+    if (bus_stop_code_keys.length === 0) {
+        await client.quit()
+        return [];
+    }
+
+    let bus_stop = await client.hGetAll(`BusStopCode:${BusStopCode}`)
+    Object.keys(bus_stop).forEach(key => {
+        bus_stop[key] = JSON.parse(bus_stop[key])
+    })
+
+    await client.quit()
+    return bus_stop
+}
+
 module.exports = {
     retrieveBusTiming,
     retrieveBusStopTiming,
     retrieveBusStops,
     retrieveBuses,
     retrieveBus,
+    retrieveBusStop,
+    retrieveNearestLocation,
 }

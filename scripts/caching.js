@@ -3,6 +3,16 @@ const moment = require('moment');
 const fs = require('fs');
 const { getBusRoutes, getBuses, getBusStops } = require('./requests');
 
+const storingNearestLocation = async(lat, long, data) => {
+    const client = createClient();
+    client.on('error', (err) => console.error('Redis Client Error', err));
+
+    await client.connect()
+    await client.hSet(`Lat:${lat},Long:${long}`, 'last_called', JSON.stringify(moment().format()))
+    await client.hSet(`Lat:${lat},Long:${long}`, 'data', JSON.stringify(data))
+    await client.quit()
+}
+
 const storingBusTiming = async(bus) => {
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
@@ -129,4 +139,5 @@ module.exports = {
     storingBusStops,
     storingBusTiming,
     storingBusStopTiming,
+    storingNearestLocation,
 }

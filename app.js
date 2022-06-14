@@ -1,7 +1,7 @@
 // MARK: API ROUTES
 const { getBusStopArrival, getBusArrival, getBusRoutes, getBuses, getBusStops } = require('./scripts/requests');
-const { cache, storingBusStopTiming, storingBusTiming } = require('./scripts/caching');
-const { retrieveBusStops, retrieveBuses, retrieveBus, retrieveBusStopTiming, retrieveBusTiming } = require('./scripts/retrieving');
+const { cache, storingBusStopTiming, storingBusTiming, storingNearestLocation } = require('./scripts/caching');
+const { retrieveBusStops, retrieveBuses, retrieveBus, retrieveBusStopTiming, retrieveBusTiming, retrieveNearestLocation } = require('./scripts/retrieving');
 const { sendErrorReport } = require('./scripts/error');
 const fastify = require('fastify')({
     logger: true
@@ -112,6 +112,11 @@ fastify.get('/nearest/:limit', async (request, reply) => {
         return {response: 'error', error: 'invalid limit input', parameters: {limit: limit}}
     }
 
+    let nearest_bus_stops = await retrieveNearestLocation(lat, long);
+    if (nearest_bus_stops) {
+        return limit > 1 ? nearest_bus_stops.splice(0, Number(limit)) : nearest_bus_stops;
+    }
+
     const sort_bus_stops = []
     const bus_stops = await retrieveBusStops();
 
@@ -174,6 +179,7 @@ fastify.get('/nearest/:limit', async (request, reply) => {
     }
 
     const sorted_bus_stops = quickSort(sort_bus_stops, 0, sort_bus_stops.length - 1)
+    await storingNearestLocation(lat, long, sorted_bus_stops);
 
     if (limit < 1) {
         return sorted_bus_stops
