@@ -261,5 +261,4 @@ const cron = require('node-cron')
 // fetch Everyday
 cron.schedule('0 0 * * *', async () => {
     await cache()
-    await sendErrorReport()
 })
