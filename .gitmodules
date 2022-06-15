@@ -1,0 +1,3 @@
+[submodule "sgTransport-Apple"]
+	path = sgTransport-Apple
+	url = https://github.com/BaBaSaMa-Hosting/sgTransport-Apple.git
