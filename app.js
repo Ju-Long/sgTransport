@@ -100,24 +100,36 @@ fastify.get('/search/BusStop/:BusStopCode', async (request, reply) => {
 })
 
 // MARK: GET NEAREST BUS STOPS
-fastify.get('/nearest/:limit', async (request, reply) => {
+fastify.get('/nearest/:page', async (request, reply) => {
     var lat = request.query.lat
     var long = request.query.long
-    const limit = request.params.limit
+    var page = request.params.page
+    // each page contain 20 index, starting from page 1
     if (isNaN(lat) || isNaN(long)) {
         return {response: 'error', error: 'invalid coordinates input', parameters: {lat: lat, long: long}}
     }
 
-    if (isNaN(limit)) {
-        return {response: 'error', error: 'invalid limit input', parameters: {limit: limit}}
+    if (isNaN(page)) {
+        return {response: 'error', error: 'invalid page input', parameters: {page: page}}
     }
+
+    if (Number(page) < 1) {
+        return {response: 'error', error: 'invalid page number, min page is 1', parameters: {page: page}}
+    }
+
+    page = Math.ceil(Number(page))
 
     lat = Math.floor(Number(lat) * 10000) / 10000
     long = Math.floor(Number(long) * 10000) / 10000
 
     let nearest_bus_stops = await retrieveNearestLocation(lat, long);
     if (nearest_bus_stops) {
-        return limit > 1 ? nearest_bus_stops.splice(0, Number(limit)) : nearest_bus_stops;
+        const max_page = nearest_bus_stops.length / 20
+        if (Math.ceil(max_page) < page) {
+            return nearest_bus_stops.splice((Math.floor(max_page) * 20), nearest_bus_stops.length - 1);
+        }
+
+        return nearest_bus_stops.splice((page * 20), nearest_bus_stops.length - 1);
     }
 
     const sort_bus_stops = []
@@ -183,12 +195,13 @@ fastify.get('/nearest/:limit', async (request, reply) => {
 
     const sorted_bus_stops = quickSort(sort_bus_stops, 0, sort_bus_stops.length - 1)
     await storingNearestLocation(lat, long, sorted_bus_stops);
-
-    if (limit < 1) {
-        return sorted_bus_stops
-    } else {
-        return sorted_bus_stops.splice(0, Number(limit))
+    
+    const max_page = nearest_bus_stops.length / 20
+    if (Math.ceil(max_page) < page) {
+        return nearest_bus_stops.splice((Math.floor(max_page) * 20), nearest_bus_stops.length - 1);
     }
+
+    return nearest_bus_stops.splice((page * 20), nearest_bus_stops.length - 1);
 })
 
 // MARK: VIEW DATA RETURN
