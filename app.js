@@ -125,11 +125,11 @@ fastify.get('/nearest/:page', async (request, reply) => {
     let nearest_bus_stops = await retrieveNearestLocation(lat, long);
     if (nearest_bus_stops) {
         const max_page = nearest_bus_stops.length / 20
-        if (Math.ceil(max_page) < page) {
+        if (Math.ceil(max_page) <= page) {
             return nearest_bus_stops.splice((Math.floor(max_page) * 20), nearest_bus_stops.length - 1);
         }
 
-        return nearest_bus_stops.splice((page * 20), nearest_bus_stops.length - 1);
+        return nearest_bus_stops.splice(((page - 1) * 20), (page * 20));
     }
 
     const sort_bus_stops = []
@@ -195,7 +195,7 @@ fastify.get('/nearest/:page', async (request, reply) => {
 
     const sorted_bus_stops = quickSort(sort_bus_stops, 0, sort_bus_stops.length - 1)
     await storingNearestLocation(lat, long, sorted_bus_stops);
-    
+
     const max_page = nearest_bus_stops.length / 20
     if (Math.ceil(max_page) < page) {
         return nearest_bus_stops.splice((Math.floor(max_page) * 20), nearest_bus_stops.length - 1);
