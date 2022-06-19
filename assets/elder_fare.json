@@ -1,0 +1,92 @@
+[
+    {
+        "min_distance": 0.0,
+        "max_distance": 3.2,
+        "card_fare": {
+            "basic_bus": 0.60,
+            "MRT": {
+                "before_07.45": 0.1,
+                "after_07.45": 0.6
+            },
+            "express_service": 1.05
+        },
+        "cash_fare": {
+            "express_service": 1.2
+        }
+    },
+    {
+        "min_distance": 3.3,
+        "max_distance": 4.2,
+        "card_fare": {
+            "basic_bus": 0.67,
+            "MRT": {
+                "before_07.45": 0.17,
+                "after_07.45": 0.67
+            },
+            "express_service": 1.05
+        },
+        "cash_fare": {
+            "express_service": 1.2
+        }
+    },
+    {
+        "min_distance": 4.3,
+        "max_distance": 5.2,
+        "card_fare": {
+            "basic_bus": 0.74,
+            "MRT": {
+                "before_07.45": 0.24,
+                "after_07.45": 0.74
+            },
+            "express_service": 1.05
+        },
+        "cash_fare": {
+            "express_service": 1.2
+        }
+    },
+    {
+        "min_distance": 5.3,
+        "max_distance": 6.2,
+        "card_fare": {
+            "basic_bus": 0.81,
+            "MRT": {
+                "before_07.45": 0.31,
+                "after_07.45": 0.81
+            },
+            "express_service": 1.05
+        },
+        "cash_fare": {
+            "express_service": 1.2
+        }
+    },
+    {
+        "min_distance": 6.3,
+        "max_distance": 7.2,
+        "card_fare": {
+            "basic_bus": 0.87,
+            "MRT": {
+                "before_07.45": 0.37,
+                "after_07.45": 0.87
+            },
+            "express_service": 1.05
+        },
+        "cash_fare": {
+            "express_service": 1.5
+        }
+    },
+    {
+        "min_distance": 7.2,
+        "max_distance": "",
+        "card_fare": {
+            "basic_bus": 0.93,
+            "MRT": {
+                "before_07.45": 0.43,
+                "after_07.45": 0.93
+            },
+            "express_service": 1.05
+        },
+        "cash_fare": {
+            "express_service": 1.5
+        }
+    }
+]

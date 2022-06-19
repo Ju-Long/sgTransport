@@ -1,0 +1,85 @@
+[{
+    "min_distance": 0.0,
+    "max_distance": 3.2,
+    "card_fare": {
+        "basic_bus": 0.43,
+        "MRT": {
+            "before_07.45": 0.00,
+            "after_07.45": 0.43
+        },
+        "express_service": 0.73
+    },
+    "cash_fare": {
+        "basic_bus": 0.85
+    }
+}, {
+    "min_distance": 3.3,
+    "max_distance": 4.2,
+    "card_fare": {
+        "basic_bus": 0.48,
+        "MRT": {
+            "before_07.45": 0.00,
+            "after_07.45": 0.48
+        },
+        "express_service": 0.78
+    },
+    "cash_fare": {
+        "basic_bus": 0.85
+    }
+}, {
+    "min_distance": 4.3,
+    "max_distance": 5.2,
+    "card_fare": {
+        "basic_bus": 0.53,
+        "MRT": {
+            "before_07.45": 0.03,
+            "after_07.45": 0.53
+        },
+        "express_service": 0.83
+    },
+    "cash_fare": {
+        "basic_bus": 0.85
+    }
+}, {
+    "min_distance": 5.3,
+    "max_distance": 6.2,
+    "card_fare": {
+        "basic_bus": 0.48,
+        "MRT": {
+            "before_07.45": 0.08,
+            "after_07.45": 0.58
+        },
+        "express_service": 0.88
+    },
+    "cash_fare": {
+        "basic_bus": 0.85
+    }
+}, {
+    "min_distance": 6.3,
+    "max_distance": 7.2,
+    "card_fare": {
+        "basic_bus": 0.61,
+        "MRT": {
+            "before_07.45": 0.11,
+            "after_07.45": 0.61
+        },
+        "express_service": 0.91
+    },
+    "cash_fare": {
+        "basic_bus": 1.05
+    }
+}, {
+    "min_distance": 7.2,
+    "max_distance": "",
+    "card_fare": {
+        "basic_bus": 0.64,
+        "MRT": {
+            "before_07.45": 0.14,
+            "after_07.45": 0.64
+        },
+        "express_service": 0.94
+    },
+    "cash_fare": {
+        "express_service": 1.05
+    }
+}]

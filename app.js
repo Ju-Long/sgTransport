@@ -9,6 +9,7 @@ fastify.get('/', async (request, reply) => {
 })
 
 fastify.register(require('./bus/index'))
+fastify.register(require('./train/index'))
 
 const start = async () => {
     await fastify.listen(3002, '0.0.0.0')

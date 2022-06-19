@@ -18,10 +18,10 @@ const storingBusTiming = async(bus) => {
     client.on('error', (err) => console.error('Redis Client Error', err));
 
     await client.connect()
-    await client.hSet(`BusTiming:${bus.ServiceNo}`, 'last_called', JSON.stringify(moment().format()))
+    await client.hSet(`BusTiming:${bus.ServiceNo},Direction:${bus.Direction}`, 'last_called', JSON.stringify(moment().format()))
     for (let i in Object.keys(bus)) {
         let key = Object.keys(bus)[i];
-        await client.hSet(`BusTiming:${bus.ServiceNo}`, key, JSON.stringify(bus[key]))
+        await client.hSet(`BusTiming:${bus.ServiceNo},Direction:${bus.Direction}`, key, JSON.stringify(bus[key]))
     }
     await client.quit()
 }
@@ -75,7 +75,7 @@ const storingBuses = async () => {
         for (let n in Object.keys(bus)) {
             let key = Object.keys(bus)[n]
 
-            await client.hSet(`Bus:${bus.ServiceNo}`, key, JSON.stringify(bus[key]))
+            await client.hSet(`Bus:${bus.ServiceNo},Direction:${bus.Direction}`, key, JSON.stringify(bus[key]))
         }
     }
     await client.quit();
