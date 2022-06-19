@@ -1,15 +1,117 @@
 const { getBusStopArrival, getBusArrival, getBusRoutes, getBuses, getBusStops } = require('./scripts/requests');
 const { cache, storingBusStopTiming, storingBusTiming, storingNearestLocation } = require('./scripts/caching');
 const { retrieveBusStops, retrieveBuses, retrieveBus, retrieveBusStopTiming, retrieveBusTiming, retrieveNearestLocation, retrieveBusStop } = require('./scripts/retrieving');
-const adult_fare = require('../assets/adult_fare.json');
+const adult_fares = require('../assets/adult_fare.json');
+const student_fares = require('../assets/student_fare.json');
+const elder_fares = require('../assets/elder_fare.json');
+const workfares = require('../assets/workfare_transport_concession.json');
 
 module.exports = async (fastify, opts) => {
     fastify.get('/bus/cache', async (request, reply) => {
         return await cache()
     });
 
-    // MARK: GET BUS DISTANCE AT ALL BUS STOP
-    fastify.get('/bus/distance/:StartBusStopCode/:EndBusStopCode', async (request, reply) => {
+    // MARK: GET BUS DISTANCE
+    fastify.get('/bus/distance/Bus/:ServiceNo/:StartBusStopCode/:EndBusStopCode', async (request, reply) => {
+        const StartBusStopCode = request.params.StartBusStopCode;
+        const EndBusStopCode = request.params.EndBusStopCode;
+        const ServiceNo = request.params.ServiceNo;
+        var fare = request.query.fare;
+        if (!StartBusStopCode || !EndBusStopCode || !ServiceNo) {
+            return {response: 'error', error: 'invalid Bus Stop Codes input', parameters: {StartBusStopCode: StartBusStopCode, EndBusStopCode: EndBusStopCode}};
+        }
+
+        if (!fare) {
+            fare = "Adult"
+        }
+
+        let bus_in_start_bus_stop = await retrieveBusStop(StartBusStopCode);
+        let bus_in_end_bus_stop = await retrieveBusStop(EndBusStopCode);
+
+        if (bus_in_start_bus_stop === []) {
+            await cache();
+            bus_in_start_bus_stop = await retrieveBusStop(StartBusStopCode);
+        }
+        if (bus_in_start_bus_stop === []) {
+            return {response: 'error', error: 'no Start Bus Stop Code can be found', parameters: {StartBusStopCode: StartBusStopCode}}
+        }
+
+        if (bus_in_end_bus_stop === []) {
+            await cache();
+            bus_in_end_bus_stop = await retrieveBusStop(EndBusStopCode);
+        }
+        if (bus_in_end_bus_stop === []) {
+            return {response: 'error', error: 'no End Bus Stop Code can be found', parameters: {EndBusStopCode: EndBusStopCode}}
+        }
+
+        let bus = null;
+        let bus_index = bus_in_start_bus_stop.Buses.findIndex((bus) => { return bus.ServiceNo === ServiceNo; });
+        if (bus_index > -1) {
+            bus = await retrieveBus(ServiceNo, bus_in_start_bus_stop.Buses[bus_index].Direction);
+        }
+
+        if (!bus) {
+            return { response: 'error', error: 'No Bus Found on the selected bus stop'}
+        }
+
+        let start_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === StartBusStopCode });
+        if (start_bus_route_index < 0) {
+            return { response: 'error', error: 'Start Bus Stop Code Not found on route', parameters: {BusStopCode: StartBusStopCode, bus: bus}};
+        }
+        let end_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === EndBusStopCode });
+        if (end_bus_route_index < 0) {
+            return { response: 'error', error: 'End Bus Stop Code Not found on route', parameters: {ServiceNo: bus.ServiceNo, BusStopCode: StartBusStopCode}};
+        }
+
+        if (start_bus_route_index >= end_bus_route_index) {
+            return { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code'};
+        }
+
+        let start_bus_stop = bus.Route[start_bus_route_index];
+        let end_bus_stop = bus.Route[end_bus_route_index];
+        let dist_diff = end_bus_stop.Distance - start_bus_stop.Distance
+        let dist_cost = 0.0
+        switch (fare) {
+            case "Adult":
+                adult_fares.forEach(adult_fare => {
+                    if (adult_fare.min_distance < dist_diff && adult_fare.max_distance > dist_diff)
+                        dist_cost = adult_fare.card_fare.basic_bus
+                });
+                break;
+
+            case "Student": 
+                student_fares.forEach(student_fare => {
+                    if (student_fare.min_distance < dist_diff && student_fare.max_distance > dist_diff)
+                        dist_cost = student_fare.card_fare.basic_bus
+                });
+                break;
+
+            case "Elder":
+                elder_fares.forEach(elder_fare => {
+                    if (elder_fare.min_distance < dist_diff && elder_fare.max_distance > dist_diff)
+                        dist_cost = elder_fare.card_fare.basic_bus
+                })
+                break;
+
+            case "Workfare":
+                workfares.forEach(workfare => {
+                    if (workfare.min_distance < dist_diff && workfare.max_distance > dist_diff)
+                        dist_cost = workfare.card_fare.basic_bus
+                })
+                break;
+        }
+
+        return {
+            ServiceNo: bus.ServiceNo,
+            Direction: bus.Direction,
+            Fare: dist_cost,
+            DistanceDifference: dist_diff,
+            Routes: bus.Route.splice(start_bus_route_index + 1, (end_bus_route_index - start_bus_route_index))
+        };
+    });
+
+    // MARK: GET BUS DISTANCE AT BUS STOP
+    fastify.get('/bus/distance/BusStop/:StartBusStopCode/:EndBusStopCode', async (request, reply) => {
         const StartBusStopCode = request.params.StartBusStopCode;
         const EndBusStopCode = request.params.EndBusStopCode;
         var fare = request.query.fare;
@@ -46,7 +148,7 @@ module.exports = async (fastify, opts) => {
             for (let n in buses_in_end_bus_stop.Buses) {
                 let end_bus = buses_in_end_bus_stop.Buses[n];
                 if (start_bus.ServiceNo === end_bus.ServiceNo && start_bus.Direction === end_bus.Direction) {
-                    buses_available.push(start_bus.ServiceNo);
+                    buses_available.push({ServiceNo: start_bus.ServiceNo, Direction: start_bus.Direction});
                 }
             }
         }
@@ -58,9 +160,8 @@ module.exports = async (fastify, opts) => {
         var response = [];
         for (let i in buses_available) {
             let bus_available = buses_available[i];
-            let bus = await retrieveBus(bus_available);
+            let bus = await retrieveBus(bus_available.ServiceNo, bus_available.Direction);
             let start_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === StartBusStopCode });
-            console.log(start_bus_route_index)
             if (start_bus_route_index < 0) {
                 response = { response: 'error', error: 'Start Bus Stop Code Not found on route', parameters: {BusStopCode: StartBusStopCode, bus: bus}};
                 break;
@@ -79,9 +180,43 @@ module.exports = async (fastify, opts) => {
             let start_bus_stop = bus.Route[start_bus_route_index];
             let end_bus_stop = bus.Route[end_bus_route_index];
             let dist_diff = end_bus_stop.Distance - start_bus_stop.Distance
+            let dist_cost = 0.0
+            switch (fare) {
+                case "Adult":
+                    adult_fares.forEach(adult_fare => {
+                        if (adult_fare.min_distance < dist_diff && adult_fare.max_distance > dist_diff)
+                            dist_cost = adult_fare.card_fare.basic_bus
+                    });
+                    break;
+
+                case "Student": 
+                    student_fares.forEach(student_fare => {
+                        if (student_fare.min_distance < dist_diff && student_fare.max_distance > dist_diff)
+                            dist_cost = student_fare.card_fare.basic_bus
+                    });
+                    break;
+
+                case "Elder":
+                    elder_fares.forEach(elder_fare => {
+                        if (elder_fare.min_distance < dist_diff && elder_fare.max_distance > dist_diff)
+                            dist_cost = elder_fare.card_fare.basic_bus
+                    })
+                    break;
+
+                case "Workfare":
+                    workfares.forEach(workfare => {
+                        if (workfare.min_distance < dist_diff && workfare.max_distance > dist_diff)
+                            dist_cost = workfare.card_fare.basic_bus
+                    })
+                    break;
+            }
+
             response.push({
-                distance_difference: dist_diff,
-                routes: bus.Route.splice(start_bus_route_index, end_bus_route_index)
+                ServiceNo: bus_available.ServiceNo,
+                Direction: bus_available.Direction,
+                Fare: dist_cost,
+                DistanceDifference: dist_diff,
+                Routes: bus.Route.splice(start_bus_route_index + 1, (end_bus_route_index - start_bus_route_index))
             });
         }
         return response;

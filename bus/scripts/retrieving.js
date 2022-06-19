@@ -140,18 +140,18 @@ const retrieveBuses = async () => {
     return buses
 }
 
-const retrieveBus = async (ServiceNo) => {
+const retrieveBus = async (ServiceNo, Direction) => {
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
 
     await client.connect();
-    let bus_code_keys = await client.keys(`Bus:*${ServiceNo}*`)
+    let bus_code_keys = await client.keys(`Bus:*${ServiceNo}*,Direction:${Direction}`)
     if (bus_code_keys.length === 0) {
         await client.quit()
         return [];
     }
 
-    let bus = await client.hGetAll(`Bus:${ServiceNo}`)
+    let bus = await client.hGetAll(`Bus:${ServiceNo},Direction:${Direction}`)
     Object.keys(bus).forEach(key => {
         bus[key] = JSON.parse(bus[key])
     })
