@@ -28,43 +28,72 @@ module.exports = async (fastify, opts) => {
         let bus_in_start_bus_stop = await retrieveBusStop(StartBusStopCode);
         let bus_in_end_bus_stop = await retrieveBusStop(EndBusStopCode);
 
-        if (bus_in_start_bus_stop === []) {
+        if (bus_in_start_bus_stop.length === 0) {
             await cache();
             bus_in_start_bus_stop = await retrieveBusStop(StartBusStopCode);
         }
-        if (bus_in_start_bus_stop === []) {
+        if (bus_in_start_bus_stop === 0) {
             return {response: 'error', error: 'no Start Bus Stop Code can be found', parameters: {StartBusStopCode: StartBusStopCode}}
         }
 
-        if (bus_in_end_bus_stop === []) {
+        if (bus_in_end_bus_stop === 0) {
             await cache();
             bus_in_end_bus_stop = await retrieveBusStop(EndBusStopCode);
         }
-        if (bus_in_end_bus_stop === []) {
+        if (bus_in_end_bus_stop === 0) {
             return {response: 'error', error: 'no End Bus Stop Code can be found', parameters: {EndBusStopCode: EndBusStopCode}}
         }
 
         let bus = null;
-        let bus_index = bus_in_start_bus_stop.Buses.findIndex((bus) => { return bus.ServiceNo === ServiceNo; });
-        if (bus_index > -1) {
-            bus = await retrieveBus(ServiceNo, bus_in_start_bus_stop.Buses[bus_index].Direction);
+        let bus_start_index = bus_in_start_bus_stop.Buses.findIndex((bus) => { return bus.ServiceNo === ServiceNo; });
+        let bus_end_index = bus_in_end_bus_stop.Buses.findIndex((bus) => { return bus.ServiceNo === ServiceNo; });
+        if (bus_start_index < 0 || bus_end_index < 0) {
+            return { response: 'error', error: 'No Bus Found on the selected bus stop'};
         }
 
-        if (!bus) {
-            return { response: 'error', error: 'No Bus Found on the selected bus stop'}
+        if (bus_in_start_bus_stop.Buses[bus_start_index].Direction !== bus_in_end_bus_stop.Buses[bus_end_index].Direction) {
+            return { response: 'error', error: 'The bus stop are not in the same direction'};
         }
-
+    
+        bus = await retrieveBus(ServiceNo, bus_in_start_bus_stop.Buses[bus_start_index].Direction);
         let start_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === StartBusStopCode });
         if (start_bus_route_index < 0) {
-            return { response: 'error', error: 'Start Bus Stop Code Not found on route', parameters: {BusStopCode: StartBusStopCode, bus: bus}};
+            return { response: 'error', error: 'Start Bus Stop Code Not found on route', parameters: {BusStopCode: StartBusStopCode, bus: bus}, line: new Error().lineNumber};
         }
+
         let end_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === EndBusStopCode });
         if (end_bus_route_index < 0) {
             return { response: 'error', error: 'End Bus Stop Code Not found on route', parameters: {ServiceNo: bus.ServiceNo, BusStopCode: StartBusStopCode}};
         }
 
         if (start_bus_route_index >= end_bus_route_index) {
-            return { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code'};
+            if (start_bus_route_index !== 0 && start_bus_route_index !== bus.Route.length - 1 && end_bus_route_index !== 0 && end_bus_route_index !== bus.Route.length - 1) {
+                return { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code'};
+            }
+
+            switch (bus_in_start_bus_stop.Buses[bus_start_index].Direction) {
+                case 1: 
+                    bus = await retrieveBus(ServiceNo, 2);
+                    break;
+
+                case 2:
+                    bus = await retrieveBus(ServiceNo, 1);
+                    break;
+            }
+
+            start_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === StartBusStopCode });
+            if (start_bus_route_index < 0) {
+                return { response: 'error', error: 'Start Bus Stop Code Not found on route', parameters: {BusStopCode: StartBusStopCode, bus: bus}, line: new Error().stack};
+            }
+
+            end_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === EndBusStopCode });
+            if (end_bus_route_index < 0) {
+                return { response: 'error', error: 'End Bus Stop Code Not found on route', parameters: {ServiceNo: bus.ServiceNo, BusStopCode: StartBusStopCode}};
+            }
+
+            if (start_bus_route_index >= end_bus_route_index) {
+                return { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code'};
+            }
         }
 
         let start_bus_stop = bus.Route[start_bus_route_index];
@@ -126,19 +155,19 @@ module.exports = async (fastify, opts) => {
         let buses_in_start_bus_stop = await retrieveBusStop(StartBusStopCode);
         let buses_in_end_bus_stop = await retrieveBusStop(EndBusStopCode);
 
-        if (buses_in_start_bus_stop === []) {
+        if (buses_in_start_bus_stop.length === 0) {
             await cache();
             buses_in_start_bus_stop = await retrieveBusStop(StartBusStopCode);
         }
-        if (buses_in_start_bus_stop === []) {
+        if (buses_in_start_bus_stop === 0) {
             return {response: 'error', error: 'no Start Bus Stop Code can be found', parameters: {StartBusStopCode: StartBusStopCode}}
         }
 
-        if (buses_in_end_bus_stop === []) {
+        if (buses_in_end_bus_stop === 0) {
             await cache();
             buses_in_end_bus_stop = await retrieveBusStop(EndBusStopCode);
         }
-        if (buses_in_end_bus_stop === []) {
+        if (buses_in_end_bus_stop === 0) {
             return {response: 'error', error: 'no End Bus Stop Code can be found', parameters: {EndBusStopCode: EndBusStopCode}}
         }
 
@@ -160,6 +189,7 @@ module.exports = async (fastify, opts) => {
         var response = [];
         for (let i in buses_available) {
             let bus_available = buses_available[i];
+
             let bus = await retrieveBus(bus_available.ServiceNo, bus_available.Direction);
             let start_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === StartBusStopCode });
             if (start_bus_route_index < 0) {
@@ -173,8 +203,36 @@ module.exports = async (fastify, opts) => {
             }
 
             if (start_bus_route_index >= end_bus_route_index) {
-                response = { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code'};
-                break;
+                if (start_bus_route_index !== 0 && start_bus_route_index !== bus.Route.length - 1 && end_bus_route_index !== 0 && end_bus_route_index !== bus.Route.length - 1) {
+                    response = { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code', line: new Error().stack};
+                    break;
+                }
+
+                switch (bus_available.Direction) {
+                    case 1: 
+                        bus = await retrieveBus(ServiceNo, 2);
+                        break;
+    
+                    case 2:
+                        bus = await retrieveBus(ServiceNo, 1);
+                        break;
+                }
+
+                start_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === StartBusStopCode });
+                if (start_bus_route_index < 0) {
+                    response = { response: 'error', error: 'Start Bus Stop Code Not found on route', parameters: {BusStopCode: StartBusStopCode, bus: bus}};
+                    break;
+                }
+                end_bus_route_index = bus.Route.findIndex((bus_stop) => { return bus_stop.BusStopCode === EndBusStopCode });
+                if (end_bus_route_index < 0) {
+                    response = { response: 'error', error: 'End Bus Stop Code Not found on route', parameters: {ServiceNo: bus.ServiceNo, BusStopCode: StartBusStopCode}};
+                    break;
+                }
+
+                if (start_bus_route_index >= end_bus_route_index) {
+                    response = { response: 'error', error: 'the Start Bus Stop Code is later or the same the End Bus Stop Code'};
+                    break;
+                }
             }
 
             let start_bus_stop = bus.Route[start_bus_route_index];
