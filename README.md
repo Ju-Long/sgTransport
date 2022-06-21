@@ -65,7 +65,7 @@ Preparations:
 
 1. ensure you have
     - [redis](https://redis.io/)
-    - [nodejs](https://nodejs.org/en/) 
+    - [nodejs](https://nodejs.org/en/)
 2. installed and working, else you cant run... [unless](https://www.reddit.com/r/YouFellForItFool/comments/cjlngm/you_fell_for_it_fool/)
 3. You can then fork / clone this repo
 4. npm install
