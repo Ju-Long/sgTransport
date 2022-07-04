@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@fastify/static": "^6.4.0",
     "@sendgrid/mail": "^7.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",

@@ -145,10 +145,10 @@ const retrieveBus = async (ServiceNo, Direction) => {
     client.on('error', (err) => console.error('Redis Client Error', err));
 
     await client.connect();
-    let bus_code_keys = await client.keys(`Bus:*${ServiceNo}*,Direction:${Direction}`)
+    let bus_code_keys = await client.keys(`Bus:${ServiceNo},Direction:${Direction}`)
     if (bus_code_keys.length === 0) {
         await client.quit()
-        return [];
+        return undefined;
     }
 
     let bus = await client.hGetAll(`Bus:${ServiceNo},Direction:${Direction}`)
@@ -165,10 +165,10 @@ const retrieveBusStop = async (BusStopCode) => {
     client.on('error', (err) => console.error('Redis Client Error', err));
 
     await client.connect();
-    let bus_stop_code_keys = await client.keys(`BusStopCode:*${BusStopCode}*`)
+    let bus_stop_code_keys = await client.keys(`BusStopCode:${BusStopCode}`)
     if (bus_stop_code_keys.length === 0) {
         await client.quit()
-        return [];
+        return undefined;
     }
 
     let bus_stop = await client.hGetAll(`BusStopCode:${BusStopCode}`)

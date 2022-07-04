@@ -310,6 +310,41 @@ module.exports = async (fastify, opts) => {
         }
     })
 
+    // MARK: GET BUS FULL DATA
+    fastify.get('/bus/Bus/:ServiceNo/:Direction', async (request, reply) => {
+        try {
+            const ServiceNo = request.params.ServiceNo
+            const Direction = request.params.Direction
+            if (!ServiceNo || !Direction) {
+                throw new RequestError('invalid Service No input', {ServiceNo: ServiceNo, Direction: Direction}, new Error().stack);
+            }
+    
+            let bus = await retrieveBus(ServiceNo, Direction);
+            if (bus === undefined) {
+                await cache();
+                bus = await retrieveBus(ServiceNo, Direction);
+            }
+            if (bus === undefined) {
+                console.log("bus is empty")
+                throw new RequestError('Service Number Could not be found', {ServiceNo: ServiceNo, Direction: Direction}, new Error().stack);
+            }
+
+            for (let i in bus.Route) {
+                let bus_stop = await retrieveBusStop(bus.Route[i].BusStopCode);
+                if (bus_stop === undefined) { continue; }
+
+                bus.Route[i].Latitude = bus_stop.Latitude
+                bus.Route[i].Longitude = bus_stop.Longitude
+                bus.Route[i].Description = bus_stop.Description
+                bus.Route[i].RoadName = bus_stop.RoadName
+            }
+
+            return bus
+        } catch (error) {
+            return {response: 'error', error: error.message, parameters: error.parameters, line: error.line}
+        }
+    })
+
     // MARK: SEARCH FOR BUS
     fastify.get('/bus/search/Bus/:ServiceNo', async (request, reply) => {
         try {
@@ -460,6 +495,7 @@ module.exports = async (fastify, opts) => {
     
             return nearest_bus_stops.splice((page * 20), nearest_bus_stops.length - 1);
         } catch (error) {
+            console.error(error)
             return {response: 'error', error: error.message, parameters: error.parameters, line: error.line}
         }
     })
