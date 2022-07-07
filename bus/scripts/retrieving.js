@@ -10,7 +10,7 @@ const retrieveNearestLocation = async (lat, long) => {
     let nearest_keys = await client.keys(`Lat:${lat},Long:${long}`);
     if (nearest_keys.length === 0) {
         await client.quit()
-        return null;
+        return undefined;
     }   
 
     let nearest = await client.hGetAll(`Lat:${lat},Long:${long}`);
@@ -22,7 +22,7 @@ const retrieveNearestLocation = async (lat, long) => {
     await client.quit();
 
     if (time_diff > 1) {
-        return null;
+        return undefined;
     }
     return nearest.data;
 }

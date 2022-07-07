@@ -608,7 +608,7 @@
     }
 }, {
     "min_distance": 40.2,
-    "max_distance": "",
+    "max_distance": 100000.0,
     "card_fare": {
         "basic_bus": 2.21,
         "MRT": {
