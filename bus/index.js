@@ -374,7 +374,7 @@ module.exports = async (fastify, opts) => {
         }
     })
 
-    // MARK: GET BUS STOP BUS TIMING TIMING
+    // MARK: GET BUS STOP BUSES TIMING
     fastify.get('/bus/timing/BusStop/:BusStopCode', async (request, reply) => {
         try {
             const BusStopCode = request.params.BusStopCode
@@ -386,12 +386,22 @@ module.exports = async (fastify, opts) => {
 
             let bus_stop_timing = await retrieveBusStopTiming(BusStopCode);
             if (bus_stop_timing) {
-                return bus_stop_timing
+                return bus_stop_timing;
+            }
+
+            let bus_stop_data = await retrieveBusStop(BusStopCode)
+            if (!bus_stop_data) { 
+                await cache();
+                bus_stop_data = await retrieveBusStop(BusStopCode);
             }
 
             let timings = await getBusStopArrival(BusStopCode);
             let bus_stop = {
                 BusStopCode: BusStopCode,
+                Latitude: bus_stop_data.Latitude,
+                Longitude: bus_stop_data.Longitude,
+                RoadName: bus_stop_data.RoadName,
+                Description: bus_stop_data.Description,
                 timings: timings
             }
 

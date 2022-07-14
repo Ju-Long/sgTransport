@@ -1,6 +1,10 @@
-const { createClient } = require('redis');
+const {
+    createClient
+} = require('redis');
 const moment = require('moment');
-const { cache } = require('./caching');
+const {
+    cache
+} = require('./caching');
 const fs = require('fs');
 
 const retrieveNearestLocation = async (lat, long) => {
@@ -11,7 +15,7 @@ const retrieveNearestLocation = async (lat, long) => {
     if (nearest_keys.length === 0) {
         await client.quit()
         return undefined;
-    }   
+    }
 
     let nearest = await client.hGetAll(`Lat:${lat},Long:${long}`);
     Object.keys(nearest).forEach(key => {
@@ -43,7 +47,7 @@ const retrieveBusTiming = async (ServiceNo) => {
         bus_timing[key] = JSON.parse(bus_timing[key])
     })
     let last_called = moment(bus_timing.last_called)
-    let time_diff = moment().diff(last_called, 'minutes'); 
+    let time_diff = moment().diff(last_called, 'minutes');
     await client.quit()
     if (time_diff > 1) {
         return null;
@@ -68,7 +72,7 @@ const retrieveBusStopTiming = async (BusStopCode) => {
         bus_stop_timing[key] = JSON.parse(bus_stop_timing[key])
     })
     let last_called = moment(bus_stop_timing.last_called)
-    let time_diff = moment().diff(last_called, 'minutes'); 
+    let time_diff = moment().diff(last_called, 'minutes');
     if (time_diff > 1) {
         await client.quit()
         return null;
@@ -172,11 +176,10 @@ const retrieveBusStop = async (BusStopCode) => {
     }
 
     let bus_stop = await client.hGetAll(`BusStopCode:${BusStopCode}`)
-    
+
     Object.keys(bus_stop).forEach(key => {
         bus_stop[key] = JSON.parse(bus_stop[key])
     })
-
 
     await client.quit()
     return bus_stop
