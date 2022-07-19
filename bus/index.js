@@ -485,6 +485,7 @@ module.exports = async (fastify, opts) => {
                     ServiceNo: ServiceNo
                 }, new Error().stack);
             }
+            
             return buses.filter((bus) => {
                 return bus.ServiceNo.includes(ServiceNo)
             });

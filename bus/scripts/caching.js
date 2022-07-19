@@ -44,11 +44,14 @@ const storingBuses = async () => {
     client.on('error', (err) => console.error('Redis Client Error', err));
 
     const buses = await getBuses()
+    const bus_stops = await getBusStops()
     const bus_routes = await getBusRoutes()
     for (let i in bus_routes) {
         let bus_route = bus_routes[i];
         let index = buses.findIndex((bus) => {return (bus.ServiceNo === bus_route.ServiceNo && bus.Direction === bus_route.Direction)})
         if (index < 0) { continue; }
+        let bus_stop = bus_stops.find((bus_stop) => { return (bus_stop.BusStopCode == bus_route.BusStopCode)})
+        if (!bus_stop) { continue; }
 
         let value = {
             StopSequence: bus_route.StopSequence,
@@ -60,6 +63,10 @@ const storingBuses = async () => {
             SAT_LastBus: bus_route.SAT_LastBus,
             SUN_FirstBus: bus_route.SUN_FirstBus,
             SUN_LastBus: bus_route.SUN_LastBus,
+            Latitude: bus_stop.Latitude,
+            Longitude: bus_stop.Longitude,
+            Description: bus_stop.Description,
+            RoadName: bus_stop.RoadName
         }
         if (buses[index].Route == undefined || 
             buses[index].Route == null) {
