@@ -1,4 +1,5 @@
-const { cache } = require('./bus/scripts/caching')
+const bus_cache = require('./bus/scripts/caching')
+const mrt_cache = require('./train/scripts/caching')
 const path = require('path');
 const fastify = require('fastify')({
     logger: true
@@ -14,7 +15,7 @@ fastify.register(require('@fastify/static'), {
 });
 
 fastify.register(require('./bus/index'))
-// fastify.register(require('./train/index'))
+fastify.register(require('./train/index'))
 
 const start = async () => {
     await fastify.listen(3002, '0.0.0.0')
@@ -31,5 +32,6 @@ const cron = require('node-cron')
 
 // fetch Everyday
 cron.schedule('0 0 * * *', async () => {
-    await cache()
+    await bus_cache.cache()
+    await mrt_cache.cache()
 })

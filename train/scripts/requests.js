@@ -18,7 +18,7 @@ const getMRTTiming = async (StationName) => {
 }
 
 const getMRTList = async () => {
-    let data = await got.get(`https://www.lta.gov.sg/map/fareCalculator/mrtTripIndex.xml`, {
+    let data = await got.get(`https://www.lta.gov.sg/map/mrt/index.xml`, {
         responseType: 'text',
         timeout: 60000,
     });
