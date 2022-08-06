@@ -7,7 +7,6 @@ const storingMRTList = async () => {
     MRT_xml_list = MRT_xml_list.replace('<mrtStationList>', "").trim()
     MRT_xml_list = MRT_xml_list.replace('</mrtStationList>', "").trim()
     do {
-        console.log("replacing brackets...")
         MRT_xml_list = MRT_xml_list.replace('<station id="', '{"StationCode": "')
         MRT_xml_list = MRT_xml_list.replace('" name="', '", "StationName": "')
         MRT_xml_list = MRT_xml_list.replace(/<code>[\s\S]*?<\/code>/g, "")
@@ -33,18 +32,6 @@ const storingMRTList = async () => {
             let key = Object.keys(mrt)[n]
             await client.hSet(`StationName: ${mrt.StationName}`, key, JSON.stringify(mrt[key]))
         }
-    }
-    await client.quit()
-}
-
-const storingMRTTiming = async (mrt_timing) => {
-    const client = createClient();
-    client.on('error', (err) => console.error('Redis Client Error', err));
-
-    await client.connect()
-    for(let n in Object.keys(mrt_timing)) {
-        let key = Object.keys(mrt_timing)[n]
-        await client.hSet(`StationName: ${mrt_timing.StationName}`, key, JSON.stringify(mrt[key]))
     }
     await client.quit()
 }
