@@ -19,6 +19,14 @@ module.exports = async (fastify, opts) => {
         }
 
         const stations = await retrieveMRTList();
+        if (!stations) {
+            await cache();
+            stations = await retrieveMRTList();
+        }
+
+        if (!stations) {
+            return { response: 'error', message: 'stations does not exist', parameters: {}, line: new Error().stack }
+        }
 
         let index = stations.findIndex((station) => {
             return station.StationName === StationName
@@ -38,16 +46,16 @@ module.exports = async (fastify, opts) => {
     });
 
     fastify.get('/train/stations', async (request, reply) => {
-        var MRT_list = await retrieveMRTList();
-        if (!MRT_list) {
+        var stations = await retrieveMRTList();
+        if (!stations) {
             await cache();
-            MRT_list = await retrieveMRTList();
+            stations = await retrieveMRTList();
         }
 
-        if (!MRT_list) {
-            return { response: 'error', message: 'MRT list not exist', parameters: {}, line: new Error().stack }
+        if (!stations) {
+            return { response: 'error', message: 'stations does not exist', parameters: {}, line: new Error().stack }
         }
-        return MRT_list
+        return stations
     })
 
     fastify.get('/train/cache', async (request, reply) => {
