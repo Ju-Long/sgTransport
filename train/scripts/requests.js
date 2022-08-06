@@ -1,3 +1,4 @@
+require('dotenv').config();
 const got = require('got');
 
 const getMRTTiming = async (StationName) => {
@@ -26,7 +27,19 @@ const getMRTList = async () => {
     return data.body;
 }
 
+const getMRTCrowdDensity = async (line) => {
+    let data = await got.get(`http://datamall2.mytransport.sg/ltaodataservice/PCDRealTime?TrainLine=${line}`, { 
+        headers: {
+            AccountKey: process.env.DATAMALL_API_KEY
+        },
+        responseType: 'json',
+        timeout: 60000
+    })
+    return data.body;
+}
+
 module.exports = {
     getMRTTiming,
     getMRTList,
+    getMRTCrowdDensity,
 }

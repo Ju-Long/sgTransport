@@ -1,6 +1,7 @@
 const {
     getMRTTiming,
-    getMRTList
+    getMRTList,
+    getMRTCrowdDensity
 } = require('./scripts/requests')
 const { retrieveMRTList } = require('./scripts/retrieving')
 const { cache, storingMRTList } = require('./scripts/caching')
@@ -56,6 +57,22 @@ module.exports = async (fastify, opts) => {
             return { response: 'error', message: 'stations does not exist', parameters: {}, line: new Error().stack }
         }
         return stations
+    })
+
+    fastify.get('/train/line/:line', async (request, reply) => {
+        const line = request.params.line;
+        if (!line) {
+            return {
+                response: 'error',
+                error: 'invalid line name inputted',
+                parameters: {
+                    line: line
+                }
+            }
+        }
+
+        const data = await getMRTCrowdDensity(line)
+        return data.value;
     })
 
     fastify.get('/train/cache', async (request, reply) => {
