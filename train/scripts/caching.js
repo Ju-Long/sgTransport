@@ -1,5 +1,6 @@
 const { createClient } = require('redis');
 const moment = require('moment');
+const mrt_locations = require('../../assets/mrt.json')
 const { getMRTList } = require('./requests');
 
 const storingMRTList = async () => {
@@ -21,6 +22,15 @@ const storingMRTList = async () => {
     MRT_xml_list = MRT_xml_list.replace(',]', ']');
 
     MRT_xml_list = JSON.parse(MRT_xml_list)
+    for (i in MRT_xml_list) {
+        let station = MRT_xml_list[i].StationName.toLowerCase()
+        for (n in mrt_locations) {
+            if (station.includes(mrt_locations[n].Name.toLowerCase())) {
+                MRT_xml_list[i].Latitude = mrt_locations[n].Latitude
+                MRT_xml_list[i].Longitude = mrt_locations[n].Longitude
+            }
+        }
+    }
 
     const client = createClient();
     client.on('error', (err) => console.error('Redis Client Error', err));
